@@ -14,4 +14,9 @@ def main ():
  turntime = input("Okay, in seconds, what is the maximum time that each turn should take? ")
  if turntime == "0":
   print("Sorry, but you cannot input that time.")
+ firstm = input("Which player is going first? ")
+ if firstm == player1 or player2:
+  print("Okay, " + firstm + " is going first.")
+ else:
+  print("The name of the player you entered was invalid.")
 main()
