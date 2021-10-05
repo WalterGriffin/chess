@@ -1,3 +1,42 @@
+# does user input tings and displaying. i have the images on pycharm but idk how to put them onto here if i can.
+
+
+
+
+import pygame as p
+from Chess import engine
+
+p.init()
+WIDTH = HEIGHT = 512
+DIMENSION = 8
+SQ_SIZE = HEIGHT // DIMENSION
+MAX_FPS = 15
+IMAGES = {}
+def loadImages():
+    pieces = ["bRook", "bKnight", "bBishop", "bQueen", "bKing", "bPawn", "wPawn", "wRook", "wKnight", "wBishop", "wQueen", "wKing"]
+    for piece in pieces:
+        IMAGES[piece] = p.transform.scale(p.image.load("ChessPieces/" + piece + ".png"), (SQ_SIZE, SQ_SIZE))
+# main driver. user input + graphics
+def main():
+    p.init()
+    screen = p.display.set_mode((WIDTH, HEIGHT))
+    clock = p.time.Clock()
+    screen.fill(p.Color("white"))
+    gs = engine.GameState()
+    loadImages()
+    running = True
+    while running:
+        for e in p.event.get():
+            if e.type == p.QUIT:
+                running = False
+        clock.tick(MAX_FPS)
+        p.display.flip()
+main()
+# will go into main later
+
+
+
+
 def main ():
  player1 = input("Welcome to chess! What would you like your name to be? ")
  print("Welcome, " + player1 + "!")
@@ -29,3 +68,22 @@ def main ():
    else:
      print("There are no more designs to choose from.")
 main()
+
+
+
+
+# stores all data abt current chess game. will determine valid moves
+class GameState():
+    def __init__(self):
+        # board is 8 by 8 list. "--" means empty space
+        self.board = [
+            ["bRook", "bKnight", "bBishop", "bQueen", "bKing", "bBishop", "bKnight", "bRook"],
+            ["bPawn", "bPawn", "bPawn", "bPawn", "bPawn", "bPawn", "bPawn", "bPawn"],
+            ["--", "--", "--", "--", "--", "--", "--", "--"],
+            ["--", "--", "--", "--", "--", "--", "--", "--"],
+            ["--", "--", "--", "--", "--", "--", "--", "--"],
+            ["--", "--", "--", "--", "--", "--", "--", "--"],
+            ["wPawn", "wPawn", "wPawn", "wPawn", "wPawn", "wPawn", "wPawn", "wPawn"],
+            ["wRook", "wKnight", "wBishop", "wQueen", "wKing", "wBishop", "wKnight", "wRook"]]
+        self.whiteToMove = True
+        self.moveLog = []
