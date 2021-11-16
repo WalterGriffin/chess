@@ -8,11 +8,14 @@ DIMENSION = 8
 SQ_SIZE = HEIGHT // DIMENSION
 MAX_FPS = 15
 IMAGES = {}
+
+# loads images
 def loadImages():
     pieces = ["bRook", "bKnight", "bBishop", "bQueen", "bKing", "bPawn", "wPawn", "wRook", "wKnight", "wBishop", "wQueen", "wKing"]
     for piece in pieces:
         IMAGES[piece] = p.transform.scale(p.image.load("ChessPieces/" + piece + ".png"), (SQ_SIZE, SQ_SIZE))
-# main driver. user input + graphics
+
+# main driver. deals with user input + graphics
 def main():
     p.init()
     screen = p.display.set_mode((WIDTH, HEIGHT))
@@ -21,16 +24,39 @@ def main():
     gs = engine.GameState()
     loadImages()
     running = True
+    sqSelected = () # no square selected initially. tuple (row, col) that keeps track of user's last click
+    playerClicks = [] # keep track of player clicks. 2 tuples
     while running:
         for e in p.event.get():
             if e.type == p.QUIT:
                 running = False
+            elif e.type == p.MOUSEBUTTONDOWN:
+                location = p.mouse.get_pos() #xy location of mouse
+                col = location[0]//SQ_SIZE
+                row = location[1]//SQ_SIZE
+                if sqSelected == (row, col): # user clicked same square twice
+                    sqSelected = () # deselect
+                    playerClicks = [] # clear player clicks
+                else:
+                    sqSelected = (row, col)
+                    playerClicks.append(sqSelected) # append for 1st and 2nd clicks
+                if len(playerClicks) == 2: # after 2nd click
+                    move = engine.Move(playerClicks[0], playerClicks[1], gs.board)
+                    print(move.getChessNotation())
+                    gs.makeMove(move)
+                    sqSelected = () # reset user clicks
+                    playerClicks = []
+
         drawGameState(screen, gs)
         clock.tick(MAX_FPS)
         p.display.flip()
+
+# graphics during current state
 def drawGameState(screen, gs):
     drawBoard(screen)
     drawPieces(screen, gs.board)
+
+# makes square/board
 def drawBoard(screen):
     colors = [p.Color("white"), p.Color("gray")]
     for r in range(DIMENSION):
@@ -38,6 +64,7 @@ def drawBoard(screen):
             color = colors[((r+c) % 2)]
             p.draw.rect(screen, color, p.Rect(c*SQ_SIZE, r*SQ_SIZE, SQ_SIZE, SQ_SIZE))
 
+# makes pieces on board
 def drawPieces(screen, board):
     for r in range(DIMENSION):
         for c in range(DIMENSION):
@@ -47,10 +74,10 @@ def drawPieces(screen, board):
 
 if __name__ == "__main__":
     main()
-# will go into main later
 
 
 
+# will go in main later
 
 def main ():
  player1 = input("Welcome to chess! What would you like your name to be? ")
@@ -102,3 +129,33 @@ class GameState():
             ["wRook", "wKnight", "wBishop", "wQueen", "wKing", "wBishop", "wKnight", "wRook"]]
         self.whiteToMove = True
         self.moveLog = []
+
+    def makeMove(self, move):
+        self.board[move.startRow][move.startCol] = "--"
+        self.board[move.endRow][move.endCol] = move.pieceMoved
+        self.moveLog.append(move) # log move so we can undo it later
+        self.whiteToMove = not self.whiteToMove # swap players
+
+class Move():
+    # maps keys to values
+    # key : value
+    ranksToRows = {"1": 7, "2": 6, "3": 5, "4": 4,
+                   "5": 3, "6": 2, "7": 1, "8": 0}
+    rowsToRanks = {v: k for k, v in ranksToRows.items()}
+    filesToCols = {"a": 0, "b": 1, "c": 2, "d": 3,
+                   "e": 4, "f": 5, "g": 6, "h": 7}
+    colsToFiles = {v: k for k, v in filesToCols.items()}
+
+    def __init__(self, startSq, endSq, board):
+        self.startRow = startSq[0]
+        self.startCol = startSq[1]
+        self.endRow = endSq[0]
+        self.endCol = endSq[1]
+        self.pieceMoved = board[self.startRow][self.startCol]
+        self.pieceCaptured = board[self.endRow][self.endCol]
+
+    def getChessNotation(self):
+        return self.getRankFile(self.startRow, self.startCol) + self.getRankFile(self.endRow, self.endCol)
+
+    def getRankFile(self, r, c):
+        return self.colsToFiles[c] + self.rowsToRanks[r]
