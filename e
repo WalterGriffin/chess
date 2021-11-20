@@ -30,6 +30,7 @@ def main():
         for e in p.event.get():
             if e.type == p.QUIT:
                 running = False
+            # mouse handler
             elif e.type == p.MOUSEBUTTONDOWN:
                 location = p.mouse.get_pos() #xy location of mouse
                 col = location[0]//SQ_SIZE
@@ -46,6 +47,10 @@ def main():
                     gs.makeMove(move)
                     sqSelected = () # reset user clicks
                     playerClicks = []
+            # key handler
+            elif e.type == p.KEYDOWN:
+                if e.key == p.K_z: # undo when z is pressed
+                    gs.undoMove()
 
         drawGameState(screen, gs)
         clock.tick(MAX_FPS)
@@ -74,6 +79,7 @@ def drawPieces(screen, board):
 
 if __name__ == "__main__":
     main()
+
 
 
 
@@ -130,11 +136,20 @@ class GameState():
         self.whiteToMove = True
         self.moveLog = []
 
+    # takes move as parameter and executes it. won't for 4 castling, pawn promotion, and en passant
     def makeMove(self, move):
         self.board[move.startRow][move.startCol] = "--"
         self.board[move.endRow][move.endCol] = move.pieceMoved
         self.moveLog.append(move) # log move so we can undo it later
         self.whiteToMove = not self.whiteToMove # swap players
+
+    #will undo the last move made
+    def undoMove(self):
+        if len(self.moveLog) !=0: # make sure that there is move 2 undo
+            move = self.moveLog.pop()
+            self.board[move.startRow][move.startCol] = move.pieceMoved
+            self.board[move.endRow][move.endCol] = move.pieceCaptured
+            self.whiteToMove = not self.whiteToMove # switch turns back
 
 class Move():
     # maps keys to values
