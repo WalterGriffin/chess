@@ -1,6 +1,6 @@
 # does user input tings and displaying
 import pygame as p
-from Chess import engine
+from Chess import ChessEngine
 
 p.init()
 WIDTH = HEIGHT = 512
@@ -13,7 +13,7 @@ IMAGES = {}
 def loadImages():
     pieces = ["bRook", "bKnight", "bBishop", "bQueen", "bKing", "bPawn", "wPawn", "wRook", "wKnight", "wBishop", "wQueen", "wKing"]
     for piece in pieces:
-        IMAGES[piece] = p.transform.scale(p.image.load("ChessPieces/" + piece + ".png"), (SQ_SIZE, SQ_SIZE))
+        IMAGES[piece] = p.transform.scale(p.image.load("images/" + piece + ".png"), (SQ_SIZE, SQ_SIZE))
 
 # main driver. deals with user input + graphics
 def main():
@@ -21,7 +21,7 @@ def main():
     screen = p.display.set_mode((WIDTH, HEIGHT))
     clock = p.time.Clock()
     screen.fill(p.Color("white"))
-    gs = engine.GameState()
+    gs = ChessEngine.GameState()
     loadImages()
     running = True
     sqSelected = () # no square selected initially. tuple (row, col) that keeps track of user's last click
@@ -42,7 +42,7 @@ def main():
                     sqSelected = (row, col)
                     playerClicks.append(sqSelected) # append for 1st and 2nd clicks
                 if len(playerClicks) == 2: # after 2nd click
-                    move = engine.Move(playerClicks[0], playerClicks[1], gs.board)
+                    move = ChessEngine.Move(playerClicks[0], playerClicks[1], gs.board)
                     print(move.getChessNotation())
                     gs.makeMove(move)
                     sqSelected = () # reset user clicks
